@@ -1,4 +1,5 @@
 use ical::{parser::ParserError, VcardParser};
+
 use std::{
     fs::File,
     io::{BufReader, Error},
@@ -16,24 +17,21 @@ fn main() -> Result<(), ParserError> {
         Err(_) => panic!("Something weird happened."),
     };
 
-    let mut i = 0;
     for contact in reader {
-        let c = contact?;
-        let version = c.properties.into_iter().find(|p| p.name == "VERSION");
+        match contact {
+            Ok(c) => {
+                let bday = c.properties.iter().find(|p| p.name == "BDAY");
+                let name = c.properties.iter().find(|p| p.name == "FN");
 
-        let value = match version {
-            Some(v) => match v.value {
-                Some(val) => val,
-                None => String::new(),
-            },
-            None => String::new(),
-        };
-
-        println!("{}", value);
-
-        i = i + 1;
-        if i > 0 {
-            break;
+                match bday {
+                    Some(_) => match name {
+                        Some(n) => println!("{:?}", n.value),
+                        None => (),
+                    },
+                    None => (),
+                }
+            }
+            Err(_) => (),
         };
     }
 
